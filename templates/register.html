@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="hero-section position-relative bg-light p-5">
+  <div class="container text-center">
+    <h1 class="section-title text-uppercase mb-3">Register</h1>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb justify-content-center text-uppercase fs-6 m-0">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="item-anchor text-decoration-none text-dark">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Create Account</li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<section class="register-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 col-md-10">
+        <div class="register-form bg-white p-5 shadow-sm border">
+            <h3 class="text-uppercase mb-4 text-center">Create Account</h3>
+            
+            <form method="POST" action="">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ field.errors.0 }}
+                        </div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">{{ field.help_text }}</small>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-dark w-100 rounded-0 text-uppercase py-3 mt-3">Register</button>
+            </form>
+
+            <div class="text-center mt-4">
+                <p class="text-secondary">Already have an account? <a href="{% url 'login' %}" class="text-dark text-decoration-underline">Log in</a></p>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Thumbnail Styling */
+.product-thumbnail {
+    transition: all 0.2s ease-in-out;
+}
+.product-thumbnail:hover {
+    opacity: 0.8;
+}
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Tab Navigation Styling */
+.nav-tabs .nav-link {
+    color: #747474; /* Text Secondary */
+    border-bottom: 2px solid transparent;
+}
+.nav-tabs .nav-link:hover {
+    border-color: transparent;
+    color: #000;
+}
+.nav-tabs .nav-link.active {
+    color: #000 !important;
+    border-color: transparent;
+    border-bottom: 2px solid #000 !important; /* Underline effect */
+}
+
+/* Quantity Input cleanup */
+.quantity-group input:focus {
+    box-shadow: none;
+    background: transparent;
+}
+</style>
+
+<section class="hero-section position-relative bg-light p-5">
+  <div class="container text-center">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb justify-content-center text-uppercase fs-6 m-0">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="item-anchor text-decoration-none text-dark">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'shop' %}" class="item-anchor text-decoration-none text-dark">Shop</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<section class="product-single py-5">
+  <div class="container">
+    <div class="row">
+      
+      <div class="col-lg-6 col-md-12 mb-5">
+        <div class="product-gallery">
+          <div class="position-relative mb-3">
+            {% if product.get_main_image %}
+                <img id="main-product-image" src="{{ product.get_main_image.image.url }}" alt="{{ product.name }}" class="img-fluid w-100 object-fit-cover" style="height: 600px;">
+            {% else %}
+                <img id="main-product-image" src="{% static 'images/product-item-1.jpg' %}" alt="default" class="img-fluid w-100 object-fit-cover" style="height: 600px;">
+            {% endif %}
+          </div>
+          
+          <div class="d-flex gap-2 thumbnail-container flex-wrap">
+            {% for img in product.images.all %}
+                <img src="{{ img.image.url }}" 
+                     class="img-fluid product-thumbnail cursor-pointer {% if img.is_main %}active border border-dark{% else %}border-0{% endif %}" 
+                     alt="thumb" 
+                     style="width: 100px; height: 100px; object-fit: cover;"
+                     onclick="changeImage(this)">
+            {% empty %}
+                <img src="{% static 'images/product-item-1.jpg' %}" class="img-fluid product-thumbnail active border border-dark" style="width: 100px; height: 100px; object-fit: cover;">
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6 col-md-12">
+        <div class="product-info ps-lg-5">
+          <h2 class="product-title text-uppercase mb-3">{{ product.name }}</h2>
+          
+          <div class="d-flex align-items-center mb-3">
+            <div class="rating text-warning me-3">
+              <svg width="18" height="18"><use xlink:href="#star-solid"></use></svg>
+              <svg width="18" height="18"><use xlink:href="#star-solid"></use></svg>
+              <svg width="18" height="18"><use xlink:href="#star-solid"></use></svg>
+              <svg width="18" height="18"><use xlink:href="#star-solid"></use></svg>
+              <svg width="18" height="18"><use xlink:href="#star-outline"></use></svg>
+              <span class="text-secondary ms-1 fs-6">(0 Reviews)</span>
+            </div>
+          </div>
+
+          <div class="price mb-4">
+            <span class="fw-bold fs-3">${{ product.price }}</span>
+          </div>
+
+          <p class="text-secondary mb-4">
+            {{ product.description }}
+          </p>
+
+          <form action="{% url 'add_cart' product.id %}" method="POST" class="product-form mb-4">
+            {% csrf_token %}
+            
+            <div class="row">
+              {% if product.colors.exists %}
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-uppercase fs-6">Color</label>
+                <select name="color" class="form-select rounded-0 border-0 border-bottom bg-transparent" required>
+                  <option value="" disabled selected>Select Color</option>
+                  {% for color in product.colors.all %}
+                    <option value="{{ color.id }}">{{ color.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+
+              {% if product.sizes.exists %}
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-uppercase fs-6">Size</label>
+                <select name="size" class="form-select rounded-0 border-0 border-bottom bg-transparent" required>
+                  <option value="" disabled selected>Select Size</option>
+                  {% for size in product.sizes.all %}
+                    <option value="{{ size.id }}">{{ size.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex flex-wrap align-items-center gap-3 mb-5 mt-3">
+                <div class="quantity-group d-flex align-items-center border px-2" style="height: 50px;">
+                    <button type="button" class="btn btn-link text-dark text-decoration-none p-0" onclick="decreaseCount()">
+                        <svg width="16" height="16"><use xlink:href="#minus"></use></svg>
+                    </button>
+                    
+                    <input type="text" name="quantity" id="quantity" value="1" 
+                           class="form-control border-0 text-center" style="width: 50px;" 
+                           readonly data-max="{{ product.stock }}">
+                           
+                    <button type="button" class="btn btn-link text-dark text-decoration-none p-0" onclick="increaseCount()">
+                        <svg width="16" height="16"><use xlink:href="#plus"></use></svg>
+                    </button>
+                </div>
+                
+                {% if product.stock <= 0 %}
+                    <button type="button" class="btn btn-secondary btn-lg rounded-0 text-uppercase px-5 py-3 flex-grow-1" disabled>Out of Stock</button>
+                {% else %}
+                    <button type="submit" class="btn btn-dark btn-lg rounded-0 text-uppercase px-5 py-3 flex-grow-1">Add to Cart</button>
+                {% endif %}
+                
+                <a href="#" class="btn btn-outline-dark rounded-0 p-3">
+                    <svg width="24" height="24"><use xlink:href="#heart"></use></svg>
+                </a>
+            </div>
+          </form>
+          <div class="product-meta text-uppercase fs-6 border-top pt-4">
+            <div class="mb-2"><strong>SKU:</strong> <span class="text-secondary">#{{ product.id }}</span></div>
+            <div class="mb-2"><strong>Category:</strong> <a href="{% url 'shop' %}?category={{ product.category.name }}" class="text-decoration-none text-secondary">{{ product.category.name }}</a></div>
+            <div class="mb-2">
+                <strong>Stock:</strong> 
+                <span class="text-secondary">
+                    {% if product.stock > 0 %}
+                        {{ product.stock }} items available
+                    {% else %}
+                        Out of Stock
+                    {% endif %}
+                </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="product-tabs py-5 bg-light">
+    <div class="container">
+        <ul class="nav nav-tabs justify-content-center border-0 mb-5" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active text-uppercase bg-transparent border-0 border-bottom border-dark text-dark fw-bold" id="desc-tab" data-bs-toggle="tab" data-bs-target="#desc" type="button" role="tab">Description</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-uppercase bg-transparent border-0 text-secondary" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">Additional Info</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-uppercase bg-transparent border-0 text-secondary" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">Reviews (0)</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="desc" role="tabpanel">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <p>{{ product.description }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="info" role="tabpanel">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr><th>Size</th><th>Chest (inch)</th><th>Waist (inch)</th><th>Hips (inch)</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>S</td><td>34-36</td><td>28-30</td><td>34-36</td></tr>
+                                <tr><td>M</td><td>38-40</td><td>32-34</td><td>38-40</td></tr>
+                                <tr><td>L</td><td>42-44</td><td>36-38</td><td>42-44</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="reviews" role="tabpanel">
+                 <div class="row justify-content-center">
+                    <div class="col-md-8 text-center">
+                        <p>No reviews yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="related-products" class="related-products product-carousel py-5 position-relative overflow-hidden">
+  <div class="container-fluid px-5"> 
+    <div class="d-flex flex-wrap justify-content-between align-items-center mt-5 mb-3">
+      <h4 class="text-uppercase">You May Also Like</h4>
+      <a href="{% url 'shop' %}" class="btn-link">View All Products</a>
+    </div>
+    
+    <div class="swiper product-swiper-related open-up" data-aos="zoom-out">
+      <div class="swiper-wrapper d-flex">
+        
+        {% for rel_product in related_products %}
+        <div class="swiper-slide">
+          <div class="product-item image-zoom-effect link-effect">
+            <div class="image-holder position-relative">
+              <a href="{% url 'product_detail' rel_product.id %}">
+                {% if rel_product.get_main_image %}
+                    <img src="{{ rel_product.get_main_image.image.url }}" alt="{{ rel_product.name }}" class="product-image img-fluid w-100">
+                {% else %}
+                    <img src="{% static 'images/product-item-1.jpg' %}" alt="default" class="product-image img-fluid w-100">
+                {% endif %}
+              </a>
+              <a href="wishlist.html" class="btn-icon btn-wishlist">
+                <svg width="24" height="24"><use xlink:href="#heart"></use></svg>
+              </a>
+              <div class="product-content">
+                <h5 class="text-uppercase fs-6 mt-3">
+                  <a href="{% url 'product_detail' rel_product.id %}">{{ rel_product.name }}</a>
+                </h5>
+                <a href="#" class="text-decoration-none fs-6" data-after="Add to cart"><span>${{ rel_product.price }}</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="swiper-slide">
+            <p class="text-center mt-5">No related products found.</p>
+        </div>
+        {% endfor %}
+
+      </div>
+      <div class="swiper-pagination mt-5"></div>
+    </div>
+    
+    <div class="icon-arrow icon-arrow-left"><svg width="50" height="50"><use xlink:href="#arrow-left"></use></svg></div>
+    <div class="icon-arrow icon-arrow-right"><svg width="50" height="50"><use xlink:href="#arrow-right"></use></svg></div>
+
+  </div>
+</section>
+
+<script>
+    // 1. Quantity Counter
+    function increaseCount() {
+        var input = document.getElementById("quantity");
+        var maxStock = parseInt(input.getAttribute('data-max')); // Get Max Stock
+        var currentValue = parseInt(input.value);
+        
+        // KEY CHANGE 3: Check if current value is less than max stock
+        if (currentValue < maxStock) {
+            input.value = currentValue + 1;
+        } else {
+            alert("Sorry, only " + maxStock + " items available in stock.");
+        }
+    }
+    
+    function decreaseCount() {
+        var input = document.getElementById("quantity");
+        if (parseInt(input.value) > 1) {
+            input.value = parseInt(input.value) - 1;
+        }
+    }
+
+    // 2. Image Switcher (Updated logic to use inline onclick for easier reference)
+    function changeImage(thumbnail) {
+        const mainImage = document.getElementById('main-product-image');
+        const thumbnails = document.querySelectorAll('.product-thumbnail');
+
+        // Change Main Image Source
+        mainImage.src = thumbnail.src;
+        
+        // Handle Active State Styling
+        thumbnails.forEach(t => {
+            t.classList.remove('active', 'border', 'border-dark');
+            t.classList.add('border-0');
+        });
+        thumbnail.classList.remove('border-0');
+        thumbnail.classList.add('active', 'border', 'border-dark');
+    }
+
+    // Initialize Swiper (Keep your existing initialization)
+    var swiperRelated = new Swiper(".product-swiper-related", {
+      slidesPerView: 5,
+      spaceBetween: 20,
+      loop: true,
+      pagination: {
+        el: ".swiper-pagination",
+        clickable: true,
+      },
+      navigation: {
+        nextEl: ".icon-arrow-right",
+        prevEl: ".icon-arrow-left",
+      },
+      breakpoints: {
+        0: { slidesPerView: 1, spaceBetween: 20 },
+        576: { slidesPerView: 2, spaceBetween: 20 },
+        768: { slidesPerView: 3, spaceBetween: 20 },
+        1200: { slidesPerView: 5, spaceBetween: 20 },
+      },
+    });
+</script>
+
+{% endblock %}

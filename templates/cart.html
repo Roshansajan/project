@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+/* Cart Table Styling */
+.hover-danger:hover {
+    color: #dc3545 !important; /* Bootstrap Danger Red */
+    transition: color 0.3s ease;
+}
+
+.table th {
+    font-family: 'Marcellus', serif;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+/* Ensure inputs in cart don't have focus outline */
+.quantity-group input:focus {
+    box-shadow: none;
+    background: transparent;
+}
+</style>
+
+<section class="hero-section position-relative bg-light p-5">
+  <div class="container text-center">
+    <h1 class="section-title text-uppercase mb-3">Shopping Cart</h1>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb justify-content-center text-uppercase fs-6 m-0">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="item-anchor text-decoration-none text-dark">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'shop' %}" class="item-anchor text-decoration-none text-dark">Shop</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Cart</li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<section class="cart-section py-5">
+  <div class="container">
+    <div class="row">
+      
+      <div class="col-lg-8 col-md-12">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr class="text-uppercase text-secondary fs-6 border-bottom">
+                <th scope="col" class="py-3">Product</th>
+                <th scope="col" class="py-3">Price</th>
+                <th scope="col" class="py-3">Quantity</th>
+                <th scope="col" class="py-3">Subtotal</th>
+                <th scope="col" class="py-3"></th>
+              </tr>
+            </thead>
+            <tbody class="border-top-0">
+              
+              {% for cart_item in cart_items %}
+              <tr class="border-bottom">
+                <td class="py-4">
+                  <div class="d-flex align-items-center gap-4">
+                    <div class="image-holder" style="width: 80px;">
+                      <a href="{% url 'product_detail' cart_item.product.id %}">
+                        {% if cart_item.product.get_main_image %}
+                            <img src="{{ cart_item.product.get_main_image.image.url }}" alt="{{ cart_item.product.name }}" class="img-fluid">
+                        {% else %}
+                            <img src="{% static 'images/product-item-1.jpg' %}" alt="default" class="img-fluid">
+                        {% endif %}
+                      </a>
+                    </div>
+                    <div class="product-detail">
+                      <h5 class="text-uppercase fs-6 m-0">
+                        <a href="{% url 'product_detail' cart_item.product.id %}" class="text-decoration-none text-dark">{{ cart_item.product.name }}</a>
+                      </h5>
+                      <div class="mt-1">
+                          {% if cart_item.color %}
+                            <small class="text-secondary d-block">Color: {{ cart_item.color.name }}</small>
+                          {% endif %}
+                          {% if cart_item.size %}
+                            <small class="text-secondary d-block">Size: {{ cart_item.size.name }}</small>
+                          {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-4">
+                  <span class="price-amount">${{ cart_item.product.price }}</span>
+                </td>
+                <td class="py-4">
+                  <div class="quantity-group d-flex align-items-center border px-2" style="width: 120px; height: 45px;">
+                      <a href="{% url 'remove_cart' cart_item.id %}" class="btn btn-link text-dark text-decoration-none p-0">
+                          <svg width="14" height="14"><use xlink:href="#minus"></use></svg>
+                      </a>
+                      
+                      <input type="text" value="{{ cart_item.quantity }}" class="form-control border-0 text-center shadow-none bg-transparent quantity-input" readonly>
+                      
+                      {% if cart_item.quantity < cart_item.product.stock %}
+                          <a href="{% url 'add_cart_item' cart_item.id %}" class="btn btn-link text-dark text-decoration-none p-0">
+                              <svg width="14" height="14"><use xlink:href="#plus"></use></svg>
+                          </a>
+                      {% else %}
+                          <button type="button" class="btn btn-link text-secondary text-decoration-none p-0" 
+                                  onclick="alert('Cannot add more. Only {{ cart_item.product.stock }} items in stock.')" 
+                                  style="cursor: not-allowed; opacity: 0.5;">
+                              <svg width="14" height="14"><use xlink:href="#plus"></use></svg>
+                          </button>
+                      {% endif %}
+                  </div>
+                  {% if cart_item.quantity >= cart_item.product.stock %}
+                    <small class="text-danger" style="font-size: 0.7rem;">Max stock reached</small>
+                  {% endif %}
+                </td>
+                <td class="py-4">
+                  <span class="fw-bold">${{ cart_item.sub_total }}</span>
+                </td>
+                <td class="py-4 text-end">
+                  <a href="{% url 'remove_cart_item' cart_item.id %}" class="text-secondary hover-danger" onclick="return confirm('Are you sure you want to remove this item?');">
+                    <svg width="20" height="20"><use xlink:href="#trash"></use></svg>
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                  <td colspan="5" class="text-center py-5">
+                      <h4>Your cart is empty.</h4>
+                      <a href="{% url 'shop' %}" class="btn btn-dark rounded-0 mt-3">Continue Shopping</a>
+                  </td>
+              </tr>
+              {% endfor %}
+
+            </tbody>
+          </table>
+        </div>
+        
+        {% if cart_items %}
+        <div class="d-flex flex-wrap justify-content-between align-items-center my-5 gap-3">
+            <form class="d-flex flex-wrap gap-2">
+                <input type="text" class="form-control rounded-0" style="width: 250px;" placeholder="Coupon Code">
+                <button class="btn btn-outline-dark text-uppercase rounded-0 px-4">Apply Coupon</button>
+            </form>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="col-lg-4 col-md-12">
+        <div class="cart-totals bg-light p-5">
+            <h4 class="text-uppercase mb-4">Cart Totals</h4>
+            
+            <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                <span class="text-secondary">Subtotal</span>
+                <span class="fw-bold">${{ total }}</span>
+            </div>
+            
+            <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                <span class="text-secondary">Shipping</span>
+                <div class="text-end">
+                    <small class="text-muted d-block">Calculated at checkout</small>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <span class="text-uppercase fs-5 fw-bold">Total</span>
+                <span class="fs-3 fw-bold">${{ total }}</span>
+            </div>
+            
+            {% if cart_items %}
+            <a href="{% url 'checkout' %}" class="btn btn-dark w-100 text-uppercase rounded-0 py-3">Proceed to Checkout</a>
+            {% else %}
+            <a href="{% url 'shop' %}" class="btn btn-dark w-100 text-uppercase rounded-0 py-3">Go to Shop</a>
+            {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}

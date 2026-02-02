@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+  <section id="billboard" class="bg-light py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <h1 class="section-title text-center mt-4" data-aos="fade-up">The Boutique Edit</h1>
+        <div class="col-md-6 text-center" data-aos="fade-up" data-aos-delay="300">
+          <p>Discover hand-picked styles that define sophistication and modern charm. Curated just for you.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="swiper main-swiper py-4" data-aos="fade-up" data-aos-delay="600">
+          <div class="swiper-wrapper d-flex border-animation-left">
+            
+            {% for product in new_arrivals %}
+            <div class="swiper-slide">
+              <div class="banner-item image-zoom-effect">
+                <div class="image-holder">
+                  <a href="{% url 'product_detail' product.id %}"> 
+                    {% if product.get_main_image %}
+                      <img src="{{ product.get_main_image.image.url }}" alt="{{ product.name }}" class="img-fluid" style="height: 400px; object-fit: cover; width: 100%;">
+                    {% else %}
+                      <img src="{% static 'images/banner-image-1.jpg' %}" alt="Default" class="img-fluid">
+                    {% endif %}
+                  </a>
+                </div>
+                <div class="banner-content py-4">
+                  <h5 class="element-title text-uppercase">
+                    <a href="{% url 'product_detail' product.id %}" class="item-anchor">{{ product.name }}</a>
+                  </h5>
+                  <p>{{ product.description|truncatewords:10 }}</p>
+                  <div class="btn-left">
+                    <a href="{% url 'product_detail' product.id %}" class="btn-link fs-6 text-uppercase item-anchor text-decoration-none">Shop the Look</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+
+          </div>
+          <div class="swiper-pagination"></div>
+        </div>
+        <div class="icon-arrow icon-arrow-left"><svg width="50" height="50"><use xlink:href="#arrow-left"></use></svg></div>
+        <div class="icon-arrow icon-arrow-right"><svg width="50" height="50"><use xlink:href="#arrow-right"></use></svg></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features py-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-3 text-center" data-aos="fade-in" data-aos-delay="0">
+          <div class="py-5">
+            <svg width="38" height="38"><use xlink:href="#calendar"></use></svg>
+            <h4 class="element-title text-capitalize my-3">Personal Styling</h4>
+            <p>Book a one-on-one session with our fashion experts to find your perfect fit.</p>
+          </div>
+        </div>
+        <div class="col-md-3 text-center" data-aos="fade-in" data-aos-delay="300">
+          <div class="py-5">
+            <svg width="38" height="38"><use xlink:href="#shopping-bag"></use></svg>
+            <h4 class="element-title text-capitalize my-3">Click & Collect</h4>
+            <p>Shop our exclusive online collection and pick up your favorites in-store.</p>
+          </div>
+        </div>
+        <div class="col-md-3 text-center" data-aos="fade-in" data-aos-delay="600">
+          <div class="py-5">
+            <svg width="38" height="38"><use xlink:href="#gift"></use></svg>
+            <h4 class="element-title text-capitalize my-3">Signature Packaging</h4>
+            <p>Every purchase comes wrapped in our beautiful, eco-friendly boutique packaging.</p>
+          </div>
+        </div>
+        <div class="col-md-3 text-center" data-aos="fade-in" data-aos-delay="900">
+          <div class="py-5">
+            <svg width="38" height="38"><use xlink:href="#arrow-cycle"></use></svg>
+            <h4 class="element-title text-capitalize my-3">Easy Returns</h4>
+            <p>We want you to love your look. Enjoy hassle-free returns on all orders.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="categories overflow-hidden">
+    <div class="container">
+      <div class="open-up" data-aos="zoom-out">
+        <div class="row">
+          
+          {% for category in categories %}
+          <div class="col-md-4">
+            <div class="cat-item image-zoom-effect">
+              <div class="image-holder">
+                <a href="{% url 'shop' %}?category={{ category.name }}">
+                  {% if category.image %}
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}" class="product-image img-fluid w-100" style="height: 300px; object-fit: cover;">
+                  {% else %}
+                    <img src="{% static 'images/cat-item1.jpg' %}" alt="Default" class="product-image img-fluid">
+                  {% endif %}
+                </a>
+              </div>
+              <div class="category-content">
+                <div class="product-button">
+                  <a href="{% url 'shop' %}?category={{ category.name }}" class="btn btn-common text-uppercase">Explore {{ category.name }}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="new-arrival" class="new-arrival product-carousel py-5 position-relative overflow-hidden">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mt-5 mb-3">
+        <h4 class="text-uppercase">Fresh Finds</h4>
+        <a href="{% url 'shop' %}" class="btn-link">View All Arrivals</a>
+      </div>
+      <div class="swiper product-swiper open-up" data-aos="zoom-out">
+        <div class="swiper-wrapper d-flex">
+          
+          {% for product in new_arrivals %}
+          <div class="swiper-slide">
+            <div class="product-item image-zoom-effect link-effect">
+              <div class="image-holder position-relative">
+                <a href="{% url 'product_detail' product.id %}">
+                  {% if product.get_main_image %}
+                    <img src="{{ product.get_main_image.image.url }}" alt="{{ product.name }}" class="product-image img-fluid w-100" style="height: 400px; object-fit: cover;">
+                  {% else %}
+                    <img src="{% static 'images/product-item-1.jpg' %}" alt="default" class="product-image img-fluid">
+                  {% endif %}
+                </a>
+                <a href="#" class="btn-icon btn-wishlist">
+                  <svg width="24" height="24"><use xlink:href="#heart"></use></svg>
+                </a>
+                <div class="product-content">
+                  <h5 class="element-title text-uppercase fs-5 mt-3">
+                    <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
+                  </h5>
+                  <span>${{ product.price }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
+        </div>
+        <div class="swiper-pagination"></div>
+      </div>
+      <div class="icon-arrow icon-arrow-left"><svg width="50" height="50"><use xlink:href="#arrow-left"></use></svg></div>
+      <div class="icon-arrow icon-arrow-right"><svg width="50" height="50"><use xlink:href="#arrow-right"></use></svg></div>
+    </div>
+  </section>
+
+  <section class="collection bg-light position-relative py-5">
+    <div class="container">
+      <div class="row">
+        <div class="title-xlarge text-uppercase txt-fx domino">Elegance</div>
+        <div class="collection-item d-flex flex-wrap my-5">
+          <div class="col-md-6 column-container">
+            <div class="image-holder">
+              <img src="{% static 'images/single-image-2.jpg' %}" alt="collection" class="product-image img-fluid">
+            </div>
+          </div>
+          <div class="col-md-6 column-container bg-white">
+            <div class="collection-content p-5 m-0 m-md-5">
+              <h3 class="element-title text-uppercase">The Signature Edit</h3>
+              <p>Timeless pieces designed to elevate your everyday wardrobe with a touch of luxury. A carefully selected assortment of pieces that blend contemporary trends with timeless grace. Perfect for the modern muse.</p>
+              <a href="{% url 'shop' %}" class="btn btn-dark text-uppercase mt-3">Explore the Edit</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="best-sellers" class="best-sellers product-carousel py-5 position-relative overflow-hidden">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mt-5 mb-3">
+        <h4 class="text-uppercase">Boutique Favorites</h4>
+        <a href="{% url 'shop' %}" class="btn-link">View All Favorites</a>
+      </div>
+      <div class="swiper product-swiper open-up" data-aos="zoom-out">
+        <div class="swiper-wrapper d-flex">
+          
+          {% for product in best_sellers %}
+          <div class="swiper-slide">
+            <div class="product-item image-zoom-effect link-effect">
+              <div class="image-holder">
+                <a href="{% url 'product_detail' product.id %}">
+                   {% if product.get_main_image %}
+                    <img src="{{ product.get_main_image.image.url }}" alt="{{ product.name }}" class="product-image img-fluid w-100" style="height: 400px; object-fit: cover;">
+                  {% else %}
+                    <img src="{% static 'images/product-item-2.jpg' %}" alt="default" class="product-image img-fluid">
+                  {% endif %}
+                </a>
+                <a href="#" class="btn-icon btn-wishlist">
+                  <svg width="24" height="24"><use xlink:href="#heart"></use></svg>
+                </a>
+                <div class="product-content">
+                  <h5 class="text-uppercase fs-5 mt-3">
+                    <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
+                  </h5>
+                  <span>${{ product.price }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
+        </div>
+        <div class="swiper-pagination"></div>
+      </div>
+      <div class="icon-arrow icon-arrow-left"><svg width="50" height="50"><use xlink:href="#arrow-left"></use></svg></div>
+      <div class="icon-arrow icon-arrow-right"><svg width="50" height="50"><use xlink:href="#arrow-right"></use></svg></div>
+    </div>
+  </section>
+
+  <section class="video py-5 overflow-hidden">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="video-content open-up" data-aos="zoom-out">
+          <div class="video-bg">
+            <img src="{% static 'images/video-image.jpg' %}" alt="video" class="video-image img-fluid">
+          </div>
+          <div class="video-player">
+            <a class="youtube" href="https://www.youtube.com/embed/pjtsGzQjFM4">
+              <svg width="24" height="24"><use xlink:href="#play"></use></svg>
+              <img src="{% static 'images/text-pattern.png' %}" alt="pattern" class="text-rotate">
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials py-5 bg-light">
+    <div class="section-header text-center mt-5">
+      <h3 class="section-title">Love Notes from Our Muses</h3>
+    </div>
+    <div class="swiper testimonial-swiper overflow-hidden my-5">
+      <div class="swiper-wrapper d-flex">
+        <div class="swiper-slide">
+          <div class="testimonial-item text-center">
+            <blockquote>
+              <p>“The quality of the silk blouse is exquisite. It feels like it was made just for me. I've never felt more confident.”</p>
+              <div class="review-title text-uppercase">Sarah Jenkins</div>
+            </blockquote>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="testimonial-item text-center">
+            <blockquote>
+              <p>“An absolute gem of a shop! The attention to detail in the packaging made opening my order feel like a special occasion.”</p>
+              <div class="review-title text-uppercase">Emily Rose</div>
+            </blockquote>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="testimonial-swiper-pagination d-flex justify-content-center mb-5"></div>
+  </section>
+
+  <section id="related-products" class="related-products product-carousel py-5 position-relative overflow-hidden">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mt-5 mb-3">
+        <h4 class="text-uppercase">Complete the Look</h4>
+        <a href="{% url 'shop' %}" class="btn-link">View All Products</a>
+      </div>
+      <div class="swiper product-swiper open-up" data-aos="zoom-out">
+        <div class="swiper-wrapper d-flex">
+          
+          {% for product in related_products %}
+          <div class="swiper-slide">
+            <div class="product-item image-zoom-effect link-effect">
+              <div class="image-holder">
+                <a href="{% url 'product_detail' product.id %}">
+                  {% if product.get_main_image %}
+                    <img src="{{ product.get_main_image.image.url }}" alt="{{ product.name }}" class="product-image img-fluid w-100" style="height: 400px; object-fit: cover;">
+                  {% else %}
+                    <img src="{% static 'images/product-item-5.jpg' %}" alt="default" class="product-image img-fluid">
+                  {% endif %}
+                </a>
+                <a href="#" class="btn-icon btn-wishlist">
+                  <svg width="24" height="24"><use xlink:href="#heart"></use></svg>
+                </a>
+                <div class="product-content">
+                  <h5 class="text-uppercase fs-5 mt-3">
+                    <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
+                  </h5>
+                  <span>${{ product.price }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
+        </div>
+        <div class="swiper-pagination"></div>
+      </div>
+      <div class="icon-arrow icon-arrow-left"><svg width="50" height="50"><use xlink:href="#arrow-left"></use></svg></div>
+      <div class="icon-arrow icon-arrow-right"><svg width="50" height="50"><use xlink:href="#arrow-right"></use></svg></div>
+    </div>
+  </section>
+
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .table th {
+        font-family: 'Marcellus', serif;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        background-color: #f8f9fa;
+    }
+    .badge-status {
+        padding: 0.5em 1em;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+</style>
+
+<section class="hero-section position-relative bg-light p-5">
+  <div class="container text-center">
+    <h1 class="section-title text-uppercase mb-3">My Orders</h1>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb justify-content-center text-uppercase fs-6 m-0">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="item-anchor text-decoration-none text-dark">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">My Orders</li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<section class="orders-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        
+        {% if orders %}
+        <div class="table-responsive shadow-sm">
+          <table class="table table-hover align-middle mb-0 border">
+            <thead class="bg-light">
+              <tr>
+                <th scope="col" class="py-4 ps-4">Order #</th>
+                <th scope="col" class="py-4">Date</th>
+                <th scope="col" class="py-4">Total</th>
+                <th scope="col" class="py-4">Status</th>
+                <th scope="col" class="py-4 text-end pe-4">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in orders %}
+              <tr>
+                <td class="py-4 ps-4 fw-bold">
+                    #{{ order.order_number }}
+                </td>
+                <td class="py-4 text-secondary">
+                    {{ order.created_at|date:"M d, Y" }}
+                </td>
+                <td class="py-4">
+                    ${{ order.order_total|floatformat:2 }}
+                </td>
+                <td class="py-4">
+                    {% if order.status == 'New' %}
+                        <span class="badge bg-primary rounded-0 badge-status">New</span>
+                    {% elif order.status == 'Accepted' %}
+                        <span class="badge bg-info rounded-0 badge-status">Accepted</span>
+                    {% elif order.status == 'Completed' %}
+                        <span class="badge bg-success rounded-0 badge-status">Completed</span>
+                    {% elif order.status == 'Cancelled' %}
+                        <span class="badge bg-danger rounded-0 badge-status">Cancelled</span>
+                    {% endif %}
+                </td>
+                <td class="py-4 text-end pe-4">
+                    <a href="#" class="btn btn-outline-dark btn-sm rounded-0 text-uppercase">View</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <svg width="60" height="60" class="text-secondary"><use xlink:href="#shopping-bag"></use></svg>
+            </div>
+            <h3 class="mb-3">You haven't placed any orders yet.</h3>
+            <p class="text-secondary mb-4">Looks like you have no orders in your history.</p>
+            <a href="{% url 'shop' %}" class="btn btn-dark rounded-0 px-5 py-3 text-uppercase">Start Shopping</a>
+        </div>
+        
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

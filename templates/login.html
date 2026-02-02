@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="hero-section position-relative bg-light p-5">
+  <div class="container text-center">
+    <h1 class="section-title text-uppercase mb-3">Login</h1>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb justify-content-center text-uppercase fs-6 m-0">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="item-anchor text-decoration-none text-dark">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Account</li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<section class="login-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-5 col-md-8 col-sm-10">
+        <div class="login-form bg-white p-5 shadow-sm border">
+            <h3 class="text-uppercase mb-4 text-center">Welcome Back</h3>
+            
+            <form method="POST" action="">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    {{ form.username }}
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    {{ form.password }}
+                </div>
+
+                <button type="submit" class="btn btn-dark w-100 rounded-0 text-uppercase py-3">Log In</button>
+            </form>
+
+            <div class="text-center mt-4">
+                <p class="text-secondary">Don't have an account? <a href="{% url 'register' %}" class="text-dark text-decoration-underline">Register here</a></p>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

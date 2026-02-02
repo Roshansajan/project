@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+/* Filter Bar Styling */
+.filter-bar input.form-control:focus, 
+.filter-bar select.form-select:focus {
+    box-shadow: none;
+    border-color: #000;
+}
+
+.filter-bar .dropdown-toggle::after {
+    margin-left: 0.5em;
+}
+
+/* 5 Column Grid Adjustments */
+.product-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    aspect-ratio: 3/4; /* Ensures consistent image height */
+}
+
+/* Pagination Style Override */
+.pagination .page-link {
+    background-color: transparent;
+    font-family: 'Marcellus', serif;
+    font-size: 1.1rem;
+}
+.pagination .page-item.active .page-link {
+    background-color: transparent;
+    color: #000;
+    font-weight: bold;
+}
+</style>
+
+<section class="hero-section position-relative p-5">
+  <div class="container text-center">
+    <h1 class="section-title text-uppercase mb-3" data-aos="fade-up">Shop Collection</h1>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb justify-content-center text-uppercase fs-6">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="item-anchor text-decoration-none text-dark">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Shop</li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<section class="filter-bar bg-light py-4 mb-5 border-top border-bottom">
+  <div class="container">
+    <div class="row align-items-center row-gap-3">
+      
+      <div class="col-lg-3 col-md-4 col-12">
+        <form action="{% url 'shop' %}" method="GET" class="position-relative">
+          {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+          {% if current_sort %}<input type="hidden" name="sort" value="{{ current_sort }}">{% endif %}
+          
+          <input type="text" name="q" class="form-control border-0 border-bottom rounded-0 bg-transparent ps-0" 
+                 placeholder="Search products..." value="{{ request.GET.q|default:'' }}">
+          <button type="submit" class="btn position-absolute end-0 top-0 p-0 text-secondary">
+            <svg width="20" height="20"><use xlink:href="#search"></use></svg>
+          </button>
+        </form>
+      </div>
+
+      <div class="col-lg-6 col-md-4 col-12 d-flex justify-content-md-center justify-content-start gap-3 flex-wrap">
+        
+        <div class="dropdown">
+          <button class="btn btn-outline-dark rounded-0 dropdown-toggle text-uppercase fs-6 px-4" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ current_category|default:"Categories" }}
+          </button>
+          <ul class="dropdown-menu rounded-0">
+            <li><a class="dropdown-item" href="?category=">All Products</a></li>
+            {% for cat in categories %}
+            <li>
+                <a class="dropdown-item" href="?category={{ cat.name }}&q={{ request.GET.q|default:'' }}&sort={{ current_sort|default:'' }}">
+                    {{ cat.name }}
+                </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-outline-dark rounded-0 dropdown-toggle text-uppercase fs-6 px-4" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Price
+          </button>
+          <div class="dropdown-menu rounded-0 p-3" style="min-width: 250px;">
+             <form action="{% url 'shop' %}" method="GET">
+                {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+                {% if request.GET.q %}<input type="hidden" name="q" value="{{ request.GET.q }}">{% endif %}
+                {% if current_sort %}<input type="hidden" name="sort" value="{{ current_sort }}">{% endif %}
+
+                <label class="form-label">Price: $<span id="price-min-val">{{ current_min_price|default:min_limit }}</span> - $<span id="price-max-val">{{ current_max_price|default:max_limit }}</span></label>
+                
+                <div class="d-flex gap-2 mb-2">
+                    <input type="number" name="min_price" class="form-control rounded-0" value="{{ current_min_price|default:min_limit }}" min="{{ min_limit }}" max="{{ max_limit }}" placeholder="Min">
+                    <input type="number" name="max_price" class="form-control rounded-0" value="{{ current_max_price|default:max_limit }}" min="{{ min_limit }}" max="{{ max_limit }}" placeholder="Max">
+                </div>
+                <button type="submit" class="btn btn-dark btn-sm w-100 rounded-0">Apply</button>
+             </form>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-lg-3 col-md-4 col-12 d-flex justify-content-md-end justify-content-between align-items-center">
+        <form action="{% url 'shop' %}" method="GET">
+            {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+            {% if request.GET.q %}<input type="hidden" name="q" value="{{ request.GET.q }}">{% endif %}
+            
+            <select name="sort" class="form-select border-0 border-bottom rounded-0 bg-transparent text-secondary w-auto" style="cursor: pointer;" onchange="this.form.submit()">
+              <option value="latest" {% if current_sort == 'latest' %}selected{% endif %}>Sort By: Latest</option>
+              <option value="popularity" {% if current_sort == 'popularity' %}selected{% endif %}>Popularity</option>
+              <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+              <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+            </select>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="shop-main pb-5">
+  <div class="container-fluid px-5"> 
+    
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
+      
+      {% for product in products %}
+      <div class="col">
+        <div class="product-item image-zoom-effect link-effect">
+          <div class="image-holder position-relative">
+            <a href="{% url 'product_detail' product.id %}">
+              {% if product.get_main_image %}
+                <img src="{{ product.get_main_image.image.url }}" alt="{{ product.name }}" class="product-image img-fluid">
+              {% else %}
+                <img src="{% static 'images/product-item-1.jpg' %}" alt="default" class="product-image img-fluid">
+              {% endif %}
+            </a>
+            <a href="#" class="btn-icon btn-wishlist">
+              <svg width="24" height="24"><use xlink:href="#heart"></use></svg>
+            </a>
+            <div class="product-content">
+              <h5 class="text-uppercase fs-6 mt-3">
+                <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
+              </h5>
+              <a href="#" class="text-decoration-none fs-6" data-after="Add to cart"><span>${{ product.price }}</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-5">
+          <h3>No products found.</h3>
+          <p class="text-muted">Try adjusting your filters or check back later.</p>
+      </div>
+      {% endfor %}
+
+    </div>
+
+    {% if products.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-5">
+      <ul class="pagination justify-content-center">
+        
+        {% if products.has_previous %}
+        <li class="page-item">
+          <a class="page-link border-0 text-dark" href="?page={{ products.previous_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" aria-label="Previous">
+            <svg width="24" height="24"><use xlink:href="#arrow-left"></use></svg>
+          </a>
+        </li>
+        {% endif %}
+
+        {% for num in products.paginator.page_range %}
+          {% if products.number == num %}
+            <li class="page-item active"><span class="page-link border-0 text-dark fw-bold text-decoration-underline">{{ num }}</span></li>
+          {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link border-0 text-dark" href="?page={{ num }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if products.has_next %}
+        <li class="page-item">
+          <a class="page-link border-0 text-dark" href="?page={{ products.next_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}" aria-label="Next">
+            <svg width="24" height="24"><use xlink:href="#arrow-right"></use></svg>
+          </a>
+        </li>
+        {% endif %}
+
+      </ul>
+    </nav>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}
